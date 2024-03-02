@@ -1,0 +1,152 @@
+---
+title: "Formative Assessment 4"
+author: "Paul Joaquin M. Delos Santos and Vera Frances A. Aguila"
+date: "2024-03-02"
+output: html_document
+---
+
+## Question 5
+  A geospatial analysis system has four sensors supplying images. The percentage of images supplied by each sensor and the percentage of images relevant to a query are shown in the following table.
+
+
+   Sensor     |    Percentage of Images Supplied    |   Percentage of Relevant Images   |  Total   |
+------------- | ----------------------------------- | --------------------------------- | -------- |
+     1        |             15                      |              50                   |   65     |
+     2        |             20                      |              60                   |   80     |
+     3        |             25                      |              80                   |   105    |
+     4        |             40                      |              85                   |   125    |
+Total         |             100                     |              275                  |   375    |
+  
+  What is the overall percentage of relevant images?
+
+We define:
+
+* Sensor 1 as S~1~
+* Sensor 2 as S~2~
+* Sensor 3 as S~3~
+* Sensor 4 as S~4~
+
+The proportion of images that are relevant to a query consists of the sum of the proportions of each sensor that are relevant images. In set notation, if E is the event that an image is relevant, then
+<br><br>$E = (S_1 ∩ E) ∪ (S_2 ∩ E) ∪ (S_3 ∩ E) ∪ (S_4 ∩ E)$
+<br><br>
+Since S~1~ ∩ E, S~2~ ∩ E, S~3~ ∩ E, and S~4~ ∩ E are mutually exclusive, then 
+<br><br>$P(E) = P(S_1 ∩ E) + P(S_2 ∩ E) + P(S_3 ∩ E) + P(S_4 ∩ E)$
+<br><br>$P(E) = P(S_1)P(E|S_1) + P(S_2)P(E|S_2) + P(S_3)P(E|S_3) + P(S_4)P(E|S_4)$
+<br><br>$P(E) = (\frac{65}{375})(\frac{50}{65}) + (\frac{80}{375})(\frac{60}{80}) + (\frac{105}{375})(\frac{80}{105}) + (\frac{125}{375})(\frac{85}{125})$
+
+```{r include=FALSE}
+RIS1 <- 50
+RIS2 <- 60
+RIS3 <- 80
+RIS4 <- 85
+S1total <- 65
+S2total <- 80
+S3total <- 105
+S4total <- 125
+overall <- 375
+
+PE <- (S1total/overall)*(RIS1/S1total) + (S2total/overall)*(RIS2/S2total) + (S3total/overall)*(RIS3/S3total) + (S4total/overall)*(RIS4/S4total)
+```
+P(E) = `r PE`
+
+## Conclusion
+The overall percentage of relevant images is `r PE*100`%.
+
+
+******
+
+
+## Question 6
+A fair coin is tossed twice.
+Let E1 be the event that both tosses have the same outcome, that is,
+E1 = (HH, TT).
+Let E2 be the event that the first toss is a head, that is, E2 = (HH, HT).
+Let E3 be the event that the second toss is a head, that is, E3 = (TH, HH).
+Show that E1, E2, and E3 are pairwise independent but not mutually independent
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+```
+
+## Sample Space
+
+E1: Both tosses have the same outcome (HH, TT).
+<br>E2: The first toss is a head (HH, HT).
+<br>E3: The second toss is a head (TH, HH).
+
+Our goal is to show that E1,E2, and E3 are pairwise independent but not mutually independent.
+
+```{r ,echo=FALSE}
+sample_space <- expand.grid(toss1 = c("H", "T"), toss2 = c("H", "T"))
+sample_space$outcome <- paste(sample_space$toss1, sample_space$toss2, sep = "")
+print(sample_space)
+```
+## Defining Events
+Next, we define the events based on the sample space.
+
+```{r , echo=FALSE}
+E1 <- c("HH", "TT")
+E2 <- c("HH", "HT")
+E3 <- c("TH", "HH")
+
+# Checking the events
+E1; E2; E3
+```
+
+## Pairwise Independence 
+Events are pairwise independent if for any two events  A and  B, the probability of  A and  B occurring together is the product of their individual probabilities:
+P(A∩B)=P(A)⋅P(B) 
+Let's calculate these probabilities.
+
+```{r, echo=FALSE}
+P_E1 <- length(intersect(E1, sample_space$outcome)) / nrow(sample_space)
+P_E2 <- length(intersect(E2, sample_space$outcome)) / nrow(sample_space)
+P_E3 <- length(intersect(E3, sample_space$outcome)) / nrow(sample_space)
+
+P_E1E2 <- length(intersect(E1, E2)) / nrow(sample_space)
+P_E1E3 <- length(intersect(E1, E3)) / nrow(sample_space)
+P_E2E3 <- length(intersect(E2, E3)) / nrow(sample_space)
+
+pairwise_independence <- data.frame(
+  Event_Pair = c("E1 and E2", "E1 and E3", "E2 and E3"),
+  Calculated = c(P_E1E2, P_E1E3, P_E2E3),
+  Expected = c(P_E1 * P_E2, P_E1 * P_E3, P_E2 * P_E3)
+)
+print(pairwise_independence)
+
+```
+
+## Demographics// Presentation
+``` {r, echo=FALSE}
+ggplot(pairwise_independence, aes(x = Event_Pair, y = Calculated, fill = Event_Pair)) +
+  geom_bar(stat = "identity") +
+  geom_hline(yintercept = pairwise_independence$Expected, linetype = "dashed", color = "black") +
+  labs(title = "Pairwise Independence of E1, E2, and E3",
+       subtitle = "Calculated vs. Expected Probabilities",
+       y = "Probability",
+       x = "") +
+  theme_minimal()
+
+```
+
+## Checking Mutual Independence 
+Events are mutually independent if the probability of all events occurring together equals the product of their individual probabilities.
+
+```{r, echo=FALSE}
+P_E1E2E3 <- length(intersect(intersect(E1, E2), E3)) / nrow(sample_space)
+P_mutual_expected <- P_E1 * P_E2 * P_E3
+
+mutual_independence_check <- data.frame(
+  Type = c("Calculated", "Expected"),
+  Probability = c(P_E1E2E3, P_mutual_expected)
+)
+print(mutual_independence_check)
+
+```
+## Conclusion 
+
+The probability calculations show that E1, E2, and E3
+are, as the plot indicates, pairwise independent. When examining mutual independence, the three events are not mutually independent since the estimated likelihood of them happening together is not equal to the sum of their individual probabilities.
+
+
+
